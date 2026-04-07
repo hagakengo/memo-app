@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -11,7 +12,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+class Memo(BaseModel):
+    content: str
 
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI!"}
+
+@app.post("/memos")
+async def create_memo(memo: Memo):
+    print(f"受信したメモ: {memo.content}")
+
+    return {"message": "保存されました！"}
