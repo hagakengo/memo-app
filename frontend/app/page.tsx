@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Search, Zap } from "lucide-react"; // アイコンを追加
+import { Plus, Trash2, Search, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
 type Memo = {
@@ -18,29 +17,42 @@ type Memo = {
 
 export default function Home() {
   const [memos, setMemos] = useState<Memo[]>([
-    // テスト用のデータ（オシャレに見せるため）
     { id: 1, title: "アイデア出し: 新機能", content: "AIを使った自動要約機能をフロントエンドに追加したい。shadcnのDialogを使うと良さそう。", createdAt: "10:30" },
     { id: 2, title: "来週のTODO", content: "・バックエンド担当と疎通確認\n・ログイン画面のUI作成\n・リファクタリング", createdAt: "昨日" },
   ]);
-  const [selectedMemoId, setSelectedMemoId] = useState<number | null>(1); // 最初から1つ選択状態にする
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [selectedMemoId, setSelectedMemoId] = useState<number | null>(1);
 
   const selectedMemo = memos.find(m => m.id === selectedMemoId);
+
+  const saveToBackend = async () => {
+    if (!selectedMemo) return;
+    try {
+      const response = await fetch("http://localhost:8000/memos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: selectedMemo.content }),
+      });
+      if (response.ok) alert("バックエンドへの保存に成功しました！");
+    } catch (error) {
+      console.error("保存失敗:", error);
+      alert("バックエンドが起動していないようです。");
+    }
+  };
 
   const addMemo = () => {
     const newMemo: Memo = {
       id: Date.now(),
-      title: "無題のメモ", // 最初はデフォルトタイトル
+      title: "無題のメモ",
       content: "",
       createdAt: new Date().toLocaleTimeString("ja-JP", { hour: '2-digit', minute: '2-digit' }),
     };
     setMemos([newMemo, ...memos]);
-    setSelectedMemoId(newMemo.id); // 新しいメモを選択状態に
+    setSelectedMemoId(newMemo.id);
   };
 
   const updateMemo = (id: number, field: "title" | "content", value: string) => {
-    setMemos(memos.map(m => m.id === id ? { ...m, [field]: value } : m));
+    const newMemos = memos.map(m => m.id === id ? { ...m, [field]: value } : m);
+    setMemos(newMemos);
   };
 
   const deleteMemo = (id: number) => {
@@ -53,7 +65,7 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
       
-      {/* 1. サイドバー（メモ一覧） */}
+      {/* 1. サイドバー */}
       <aside className="w-80 bg-white border-r border-slate-200 flex flex-col">
         <header className="p-4 border-b border-slate-200 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -79,9 +91,7 @@ export default function Home() {
                 key={memo.id}
                 onClick={() => setSelectedMemoId(memo.id)}
                 className={`w-full text-left p-3 rounded-lg transition-colors flex flex-col gap-1 ${
-                  selectedMemoId === memo.id 
-                    ? "bg-blue-50 text-blue-700" 
-                    : "hover:bg-slate-100"
+                  selectedMemoId === memo.id ? "bg-blue-50 text-blue-700" : "hover:bg-slate-100"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -99,7 +109,7 @@ export default function Home() {
         </ScrollArea>
       </aside>
 
-      {/* 2. メインエリア（編集画面） */}
+      {/* 2. メインエリア */}
       <main className="flex-1 bg-white flex flex-col">
         {selectedMemo ? (
           <>
@@ -107,7 +117,6 @@ export default function Home() {
               <Input 
                 value={selectedMemo.title} 
                 onChange={(e) => updateMemo(selectedMemo.id, "title", e.target.value)}
-                placeholder="タイトルを入力..."
                 className="text-2xl font-extrabold tracking-tight border-none p-0 h-auto focus-visible:ring-0 shadow-none w-full max-w-lg"
               />
               <div className="flex items-center gap-2">
@@ -129,15 +138,20 @@ export default function Home() {
               />
             </div>
             
-            <footer className="p-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 text-center">
-              最終更新: {selectedMemo.createdAt} | 文字数: {selectedMemo.content.length}
+            <footer className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
+              <div>最終更新: {selectedMemo.createdAt} | 文字数: {selectedMemo.content.length}</div>
+              <Button 
+                onClick={saveToBackend} 
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 h-9 text-sm font-bold shadow-md"
+              >
+                保存する
+              </Button>
             </footer>
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center bg-slate-50">
             <Zap className="h-16 w-16 text-blue-100" />
             <h2 className="text-xl font-bold text-slate-900">メモが選択されていません</h2>
-            <p className="text-sm text-slate-500 max-w-xs">左側のリストからメモを選択するか、新しいメモを作成して開発を始めましょう。</p>
             <Button onClick={addMemo} className="rounded-full bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               最初のメモを作成
