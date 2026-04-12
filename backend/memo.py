@@ -16,6 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 class Memo(BaseModel):
+    title: str # 4/12のケンケンの指摘によりタイトルを追加。
     content: str
 
 @app.get("/")
@@ -24,6 +25,6 @@ def read_root():
 
 @app.post("/memos")
 async def create_memo(memo: Memo):
-    print(f"受信したメモ: {memo.content}")
+    print(f"受信したメモ - タイトル: {memo.title}, 内容: {memo.content}") # 4/12のケンケンの指摘によりタイトルを追加。
 
     return {"message": "保存されました！"}
