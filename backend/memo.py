@@ -19,9 +19,18 @@ class Memo(BaseModel):
     title: str # 4/12のケンケンの指摘によりタイトルを追加。
     content: str
 
+# 4/13追加：メモを保存するためのリストとIDカウンターを追加。
+memos = []
+memo_id_counter = 1
+
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI!"}
+
+# 4/13追加：現在保存されているメモを見るためのための一覧（GET）
+@app.get("/memos")
+def get_memos():
+    return memos
 
 @app.post("/memos")
 async def create_memo(memo: Memo):
