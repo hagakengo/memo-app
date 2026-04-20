@@ -15,7 +15,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-class Memo(BaseModel):
+class name(BaseModel):
     content: str
 
 @app.get("/")
