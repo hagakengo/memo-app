@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List # 4/17追加：リストを使用するためのインポート
 
 app = FastAPI()
 
@@ -19,7 +18,7 @@ app.add_middleware(
 class Memo(BaseModel):
     title: str # 4/12のケンケンの指摘によりタイトルを追加。
     content: str
-    tag :List[str] = [] # 4/17追加：タグのリストを追加。デフォルトは空のリスト。
+    tag: str = ""
 
 # 4/13追加：メモを保存するためのリストとIDカウンターを追加。
 memos = []
