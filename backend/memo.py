@@ -58,6 +58,5 @@ def delete_memo(memo_id: int):
 
     # 4/14追加：指定されたIDのメモをリストから削除。
     memos = [memo for memo in memos if memo["id"] != memo_id]
-    
-    return {"message": f"ID {memo_id} のメモが削除されました"}
 
+    return {"message": f"ID {memo_id} のメモが削除されました"}
