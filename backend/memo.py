@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 class Memo(BaseModel):
-    title: str # 4/12のケンケンの指摘によりタイトルを追加。
+    title: str = ""
     content: str
     tag: str = ""
 
