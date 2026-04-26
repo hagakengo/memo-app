@@ -32,10 +32,10 @@ export default function Home() {
       const response = await fetch("http://localhost:8000/memos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           title: selectedMemo.title,
           content: selectedMemo.content,
-          tag: selectedMemo.tag
+          tag: selectedMemo.tag 
         }),
       });
       if (response.ok) {
@@ -72,7 +72,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
-
+      
       {/* 1. サイドバー */}
       <aside className="w-80 bg-white border-r border-slate-200 flex flex-col">
         <header className="p-4 border-b border-slate-200 flex items-center justify-between">
@@ -84,7 +84,7 @@ export default function Home() {
             <Plus className="h-5 w-5" />
           </Button>
         </header>
-
+        
         <div className="p-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -119,15 +119,15 @@ export default function Home() {
           <>
             <header className="p-4 border-b flex items-center justify-between gap-4">
               <div className="flex-1">
-                <Input
-                  value={selectedMemo.title}
+                <Input 
+                  value={selectedMemo.title} 
                   disabled={!isEditing}
                   onChange={(e) => updateMemo(selectedMemo.id, "title", e.target.value)}
                   className="text-2xl font-extrabold border-none p-0 focus-visible:ring-0 disabled:opacity-100"
                 />
                 <div className="flex items-center gap-2 mt-1">
                   <Tag className="h-3 w-3 text-slate-400" />
-                  <select
+                  <select 
                     value={selectedMemo.tag}
                     disabled={!isEditing}
                     onChange={(e) => updateMemo(selectedMemo.id, "tag", e.target.value)}
@@ -142,9 +142,9 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant={isEditing ? "default" : "outline"}
-                  size="sm"
+                <Button 
+                  variant={isEditing ? "default" : "outline"} 
+                  size="sm" 
                   onClick={() => setIsEditing(!isEditing)}
                   className="rounded-full"
                 >
@@ -155,17 +155,17 @@ export default function Home() {
                 </Button>
               </div>
             </header>
-
+            
             <div className="flex-1 p-6 flex flex-col">
-              <Textarea
-                value={selectedMemo.content}
+              <Textarea 
+                value={selectedMemo.content} 
                 disabled={!isEditing}
                 onChange={(e) => updateMemo(selectedMemo.id, "content", e.target.value)}
                 placeholder="内容を入力..."
                 className="flex-1 text-base border-none p-0 focus-visible:ring-0 shadow-none resize-none disabled:opacity-100"
               />
             </div>
-
+            
             <footer className="p-3 border-t bg-slate-50 flex items-center justify-between">
               <div className="text-xs text-slate-400">文字数: {selectedMemo.content.length}</div>
               <Button onClick={saveToBackend} className="bg-blue-600 hover:bg-blue-700 rounded-full px-8">
