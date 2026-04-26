@@ -40,7 +40,7 @@ async def create_memo(memo: Memo):
         "id": memo_id_counter,
         "title": memo.title,
         "content": memo.content,
-        "tags": memo.tag # 4/17追加：タグの情報も保存する。
+        "tag": memo.tag # 4/17追加：タグの情報も保存する。
     }
     # 4/14追加：リストに追加。
     memos.append(new_memo)
