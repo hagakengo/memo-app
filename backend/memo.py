@@ -1,61 +1,82 @@
+import sqlite3
+from contextlib import contextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# Reactからの通信を許可する設定
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:5173" #http://localhost:5173 を追加
+        "http://localhost:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+DB_PATH = "memos.db"
+
+
+def init_db():
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS memos (
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                title   TEXT    NOT NULL DEFAULT '',
+                content TEXT    NOT NULL,
+                tag     TEXT    NOT NULL DEFAULT ''
+            )
+        """)
+        conn.commit()
+
+
+@contextmanager
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+@app.on_event("startup")
+def startup():
+    init_db()
+
+
 class Memo(BaseModel):
     title: str = ""
     content: str
     tag: str = ""
 
-# 4/13追加：メモを保存するためのリストとIDカウンターを追加。
-memos = []
-memo_id_counter = 1
 
-# 4/17削除：最初の確認用コードHello from FastAPI!を削除。
-
-# 4/13追加：現在保存されているメモを見るためのための一覧（GET）
 @app.get("/memos")
 def get_memos():
-    return memos
-# 4/14追加：メモを保存するためのエンドポイント（POST）
+    with get_db() as conn:
+        rows = conn.execute("SELECT id, title, content, tag FROM memos").fetchall()
+    return [dict(row) for row in rows]
+
+
 @app.post("/memos")
-async def create_memo(memo: Memo):
-    global memo_id_counter
+def create_memo(memo: Memo):
+    with get_db() as conn:
+        cursor = conn.execute(
+            "INSERT INTO memos (title, content, tag) VALUES (?, ?, ?)",
+            (memo.title, memo.content, memo.tag),
+        )
+        conn.commit()
+        new_id = cursor.lastrowid
+    print(f"保存したメモ: id={new_id}, title={memo.title}")
+    return {"message": "保存されました", "id": new_id}
 
-# 4/14追加：新しいメモのデータを作成し、IDを割り当てて保存する。
-    new_memo = {
-        "id": memo_id_counter,
-        "title": memo.title,
-        "content": memo.content,
-        "tag": memo.tag # 4/17追加：タグの情報も保存する。
-    }
-    # 4/14追加：リストに追加。
-    memos.append(new_memo)
-    # 4/14追加：IDカウンターをインクリメント。
-    memo_id_counter += 1
 
-    print(f"バインダーに保存したメモ: {new_memo}")
-    return {"message": "保存されました"} # 4/12のケンケンの指摘によりタイトルを追加。
-
-#4/14追加、削除機能。
 @app.delete("/memos/{memo_id}")
 def delete_memo(memo_id: int):
-    global memos
-
-    # 4/14追加：指定されたIDのメモをリストから削除。
-    memos = [memo for memo in memos if memo["id"] != memo_id]
-
+    with get_db() as conn:
+        conn.execute("DELETE FROM memos WHERE id = ?", (memo_id,))
+        conn.commit()
     return {"message": f"ID {memo_id} のメモが削除されました"}
