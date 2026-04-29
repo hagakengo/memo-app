@@ -48,7 +48,7 @@ async def create_memo(memo: Memo):
     memo_id_counter += 1
 
     print(f"バインダーに保存したメモ: {new_memo}")
-    return {"message": "保存されました"} # 4/12のケンケンの指摘によりタイトルを追加。
+    return {"message": "保存されました", "id": new_memo["id"]}
 
 #4/14追加、削除機能。
 @app.delete("/memos/{memo_id}")
