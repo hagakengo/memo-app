@@ -12,8 +12,9 @@ type Memo = {
   id: number;
   title: string;
   content: string;
-  tag: string; // タグ機能を追加
-  createdAt: string;
+  tag: string;
+  createdAt?: string;
+  isSaved?: boolean;
 };
 
 export default function Home() {
@@ -24,7 +25,7 @@ export default function Home() {
   useEffect(() => {
     fetch("http://localhost:8000/memos")
       .then((res) => res.json())
-      .then((data) => setMemos(data))
+      .then((data) => setMemos(data.map((m: Memo) => ({ ...m, isSaved: true }))))
       .catch(() => {});
   }, []);
 
@@ -33,6 +34,9 @@ export default function Home() {
   const saveToBackend = async () => {
     if (!selectedMemo) return;
     try {
+      if (selectedMemo.isSaved) {
+        await fetch(`http://localhost:8000/memos/${selectedMemo.id}`, { method: "DELETE" });
+      }
       const response = await fetch("http://localhost:8000/memos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,7 +49,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         if (data.id) {
-          setMemos(memos.map(m => m.id === selectedMemo.id ? { ...m, id: data.id } : m));
+          setMemos(memos.map(m => m.id === selectedMemo.id ? { ...m, id: data.id, isSaved: true } : m));
           setSelectedMemoId(data.id);
         }
         alert("保存に成功しました！");
@@ -64,9 +68,9 @@ export default function Home() {
       tag: "なし",
       createdAt: new Date().toLocaleTimeString("ja-JP", { hour: '2-digit', minute: '2-digit' }),
     };
-    setMemos([newMemo, ...memos]);
+    setMemos([{ ...newMemo, isSaved: false }, ...memos]);
     setSelectedMemoId(newMemo.id);
-    setIsEditing(true); // 新規作成時は編集モード
+    setIsEditing(true);
   };
 
   const updateMemo = (id: number, field: keyof Memo, value: string) => {
@@ -75,9 +79,12 @@ export default function Home() {
 
   const deleteMemo = async (id: number) => {
     if(!confirm("本当に削除しますか？")) return;
-    try {
-      await fetch(`http://localhost:8000/memos/${id}`, { method: "DELETE" });
-    } catch (error) {}
+    const memo = memos.find(m => m.id === id);
+    if (memo?.isSaved) {
+      try {
+        await fetch(`http://localhost:8000/memos/${id}`, { method: "DELETE" });
+      } catch (error) {}
+    }
     setMemos(memos.filter((m) => m.id !== id));
     if (selectedMemoId === id) setSelectedMemoId(null);
   };
