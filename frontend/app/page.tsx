@@ -23,7 +23,7 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false); // 編集モード管理
 
   useEffect(() => {
-    fetch("http://localhost:8000/memos")
+    fetch("https://memo-app-vocp.onrender.com/memos")
       .then((res) => res.json())
       .then((data) => setMemos(data.map((m: Memo) => ({ ...m, isSaved: true }))))
       .catch(() => {});
@@ -35,9 +35,9 @@ export default function Home() {
     if (!selectedMemo) return;
     try {
       if (selectedMemo.isSaved) {
-        await fetch(`http://localhost:8000/memos/${selectedMemo.id}`, { method: "DELETE" });
+        await fetch(`https://memo-app-vocp.onrender.com/memos/${selectedMemo.id}`, { method: "DELETE" });
       }
-      const response = await fetch("http://localhost:8000/memos", {
+      const response = await fetch("https://memo-app-vocp.onrender.com/memos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +82,7 @@ export default function Home() {
     const memo = memos.find(m => m.id === id);
     if (memo?.isSaved) {
       try {
-        await fetch(`http://localhost:8000/memos/${id}`, { method: "DELETE" });
+        await fetch(`https://memo-app-vocp.onrender.com/memos/${id}`, { method: "DELETE" });
       } catch (error) {}
     }
     setMemos(memos.filter((m) => m.id !== id));
